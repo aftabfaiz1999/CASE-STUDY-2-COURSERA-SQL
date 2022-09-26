@@ -42,16 +42,27 @@ select Avg(TotalSteps)as avg_total_steps,Calories from dailyActivity_merged Grou
 
 
  ----8. In weightLogInfo_merged table have only 8 people id's with repect to weight..The Ids and calories from dailyActivity_merged and weight and bmi from weightLogInfo_merged
+ create view Calories_Weight_kg as
 
 select distinct(dailyActivity_merged.Id),dailyActivity_merged.Calories,weightLogInfo_merged.WeightKg,weightLogInfo_merged.BMI
 from dailyActivity_merged
 left join weightLogInfo_merged
 on dailyActivity_merged.Id=weightLogInfo_merged.Id
-where weightLogInfo_merged.WeightKg is not null order by Calories
+where weightLogInfo_merged.WeightKg is not null
+
+----Wight of 8 People by Calories Burned 
+
+
+select  sum(distinct Calories) as Sum_Calories , WeightKg from Calories_Weight_kg group by WeightKg
+select  avg(distinct Calories) as Avg_Calories , WeightKg from Calories_Weight_kg group by WeightKg
+select  min(distinct Calories) as Min_Calories , WeightKg from Calories_Weight_kg group by WeightKg
+select  max(distinct Calories) as Max_Calories , WeightKg from Calories_Weight_kg group by WeightKg
 
 
 
 -----9.Time duration of  people sleeps after burned Calories
+create view sleepDuration_after_CaloriesBrned as
+
 select distinct(dailyCalories_merged.Calories),dailyCalories_merged.ActivityDay,
 Cast(TotalMinutesAsleep / 60 as Varchar) + ' hours '+
 Cast(TotalMinutesAsleep % 60 as Varchar) + ' minutes'
@@ -61,14 +72,22 @@ left join sleepDay_merged
 on dailyCalories_merged.Id=sleepDay_merged.Id
 where sleepDay_merged.TotalMinutesAsleep > (select count(distinct Id)from dailyCalories_merged)
 
------10.Heartrate Value with AverageIntensity with respect to id's
 
-select distinct(heartrate_seconds_merged.Value),hourlyIntensities_merged.AverageIntensity,hourlyIntensities_merged.Id
+-----10.Heartrate Value with AverageIntensity with respect to id's Create a View
+
+
+create view totalintensity_heartrate_Onehour as
+
+select distinct(heartrate_seconds_merged.Value),hourlyIntensities_merged.TotalIntensity,hourlyIntensities_merged.Id
 from hourlyIntensities_merged
 left join heartrate_seconds_merged
 on hourlyIntensities_merged.Id=heartrate_seconds_merged.Id 
 where Value is not null
-order by Value
+
+---- To Check TotalIntensity IN Onehour with Heartrate
+select count(distinct TotalIntensity) as TotalIntnsity, totalintensity_heartrate_Onehour.value as HeartRate from totalintensity_heartrate_Onehour
+group by Value
+
 
 
 
